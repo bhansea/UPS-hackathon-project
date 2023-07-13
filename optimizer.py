@@ -15,24 +15,24 @@ class Package:
         self.width = width
         self.volume = height * length * width
 packages = []
-get_all_packages = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Package` """)  # Make an API request.
+get_all_packages = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Demo.Package` """)  # Make an API request.
 for row in get_all_packages:
     packages.append(Package(row[0], row[1], row[2], row[3]))
     
 class Vehicle:
-    def __init__(self, name_id, quantity, max_weight, max_volume, length, height, width):
+    def __init__(self, name_id, quantity, max_weight, length, height, width):
         self.name_id = name_id
         self.quantity = quantity
         self.max_weight = max_weight
-        self.max_volume = max_volume
+        self.max_volume = length * height * width
         self.length = length
         self.height = height
         self.width = width
         
 vehicles = []
-get_all_vehicles = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Vehicle` """)  # Make an API request.
+get_all_vehicles = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Demo.Vehicle` """)  # Make an API request.
 for row in get_all_vehicles:
-    vehicles.append(Vehicle(row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+    vehicles.append(Vehicle(row[0], row[1], row[2], row[3], row[4], row[5]))
 
 # vehicles = [
 #     Vehicle('LORRY-L', 5000, 24261874.16, 17 * 30.48, 7.2 * 30.48, 7 * 30.48),
@@ -159,14 +159,12 @@ if status == pywraplp.Solver.OPTIMAL:
     assign = []
     total_weight = 0
     total_packages = 0
-    print('Total Lorry: ')
-    print()
     print('Total Packages:', len(packages))
     print()
     for j in data['vehicles']:
         bin_weight = 0
         bin_volume = 0
-        print('Truck ', j, '[', data['truck_types'][j] ,'] - max_weight:[', "{:,.2f}".format(data['max_weight'][j]), '] - max volume:[', "{:,.2f}".format(data['max_volume'][j]), ']' )
+        print('Vehicle ', j, '[', data['truck_types'][j] ,'] - max_weight:[', "{:,.2f}".format(data['max_weight'][j]), '] - max volume:[', "{:,.2f}".format(data['max_volume'][j]), ']' )
         for i in data['packages']:
             if x[i, j].solution_value() > 0:
                 assign.append(i)
