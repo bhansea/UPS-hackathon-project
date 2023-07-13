@@ -1,9 +1,11 @@
+# code modifed from https://medium.com/thelorry-product-tech-data/load-optimization-problem-1baa116656df
+
 from google.cloud import bigquery
 import pandas as pd
 pd.set_option("display.max_columns", None)
 
-# data_url = "loadPerformance\dataset\examples.csv"
-# packages = pd.read_csv(data_url)
+# Construct a BigQuery client object.
+client = bigquery.Client()
 
 class Package:
     def __init__(self, weight, height, length, width):
@@ -12,18 +14,32 @@ class Package:
         self.length = length
         self.width = width
         self.volume = height * length * width
-
-# Get the volume of packages
-# packages['Volume'] = packages['Actual Weight'] * packages['Actual Height'] * packages['Actual Length']
-
 packages = []
-
-# Construct a BigQuery client object.
-client = bigquery.Client()
-query = """ SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Package` """
-query_job = client.query(query)  # Make an API request.
-for row in query_job:
+get_all_packages = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Package` """)  # Make an API request.
+for row in get_all_packages:
     packages.append(Package(row[0], row[1], row[2], row[3]))
+    
+class Vehicle:
+    def __init__(self, id, number, max_weight, max_volume, length, height, width):
+        self.id = id
+        self.number = number
+        self.max_weight = max_weight
+        self.max_volume = max_volume
+        self.length = length
+        self.height = height
+        self.width = width
+        
+# vehicles = []
+# get_all_vehicles = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Vehicle` """)  # Make an API request.
+# for row in get_all_vehicles:
+#     vehicles.append(Vehicle(row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+
+vehicles = [
+    Vehicle('LORRY-L', 1, 5000, 24261874.16, 17 * 30.48, 7.2 * 30.48, 7 * 30.48),
+    Vehicle('LORRY-M', 2, 3000, 19980366.96, 14 * 30.48, 7.2 * 30.48, 7 * 30.48),
+    Vehicle('LORRY-S', 3, 1000, 7079211.65, 10 * 30.48, 5 * 30.48, 5 * 30.48),
+    Vehicle('VAN', 3, 500, 2378615.11, 8 * 30.48, 3 * 30.48, 3.5 * 30.48),
+    Vehicle('4x4', 6, 500, 1189307.56, 4 * 30.48, 3 * 30.48, 3.5 * 30.48)]
     
 
 # Calculate the total weight and total volume of all packages
@@ -40,14 +56,14 @@ warnings.filterwarnings('ignore')
 
 # create data model for knapsack problem 
 # paramter optimize are data to be packing into the available vehicle in totalLorry
-def create_data_model(dataset, totalLorry):
+def create_data_model(packages, vehicles):
     """Create the data for the example."""
     data = {}
-    data['weights'] = dataset['Actual Weight'].to_list()
-    data['volumes'] = dataset['Volume'].to_list()
-    data['heights'] = dataset['Actual Height'].to_list()
-    data['lengths'] = dataset['Actual Length'].to_list()
-    data['widths'] = dataset['Actual Width'].to_list()
+    data['weights'] = list(p.weight for p in packages)
+    data['volumes'] = list(p.volume for p in packages)
+    data['heights'] = list(p.height for p in packages)
+    data['lengths'] = list(p.length for p in packages)
+    data['widths'] = list(p.width for p in packages)
     
     data['packages'] = list(range(len(data['weights'])))
     data['num_packages'] = len(data['weights'])
@@ -60,10 +76,10 @@ def create_data_model(dataset, totalLorry):
     truck_types = []
     
     # reserve totalLorry data to be starting from small vehicle first
-    totalLorry.reverse()
+    vehicles.reverse()
 
     # resgister max_weight and max_volume for each available vehicle
-    for tL in totalLorry:
+    for tL in vehicles:
         for i in range(tL.number):
             max_volumes.append(tL.max_volume)
             max_weights.append(tL.max_weight)
@@ -81,23 +97,7 @@ def create_data_model(dataset, totalLorry):
     data['vehicles'] = list(range(len(data['max_volume'])))
     return data
 
-class Vehicle:
-    def __init__(self, id, number, max_weight, max_volume, length, height, width):
-        self.id = id
-        self.number = number
-        self.max_weight = max_weight
-        self.max_volume = max_volume
-        self.length = length
-        self.height = height
-        self.width = width
 
-## main ish
-vehicles = [
-    Vehicle('LORRY-L', 1, 5000, 24261874.16, 17 * 30.48, 7.2 * 30.48, 7 * 30.48),
-    Vehicle('LORRY-M', 2, 3000, 19980366.96, 14 * 30.48, 7.2 * 30.48, 7 * 30.48),
-    Vehicle('LORRY-S', 3, 1000, 7079211.65, 10 * 30.48, 5 * 30.48, 5 * 30.48),
-    Vehicle('VAN', 3, 500, 2378615.11, 8 * 30.48, 3 * 30.48, 3.5 * 30.48),
-    Vehicle('4x4', 6, 500, 1189307.56, 4 * 30.48, 3 * 30.48, 3.5 * 30.48)]
 
 data = create_data_model(packages, vehicles)
 
