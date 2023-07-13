@@ -146,3 +146,11 @@ packages = [
     Package(package_id=5, dimensions=(18, 28, 22), weight=1000)
 ]
 assigned_packages = assign_packages(vehicles, packages)
+for assigned_vehicle in assigned_packages:
+    print(f"Vehicle ID: {assigned_vehicle['vehicle'].vehicle_id}")
+    print(f"Location: {assigned_vehicle['vehicle'].location}")
+    print(f"Driver ID: {assigned_vehicle['vehicle'].driver_id}")
+    print("Packages:")
+    for package_id in assigned_vehicle['packages']:
+        print(f"- Package ID: {package_id}")
+    print("------------------------")
