@@ -5,7 +5,7 @@ import pandas as pd
 pd.set_option("display.max_columns", None)
 
 # Construct a BigQuery client object.
-client = bigquery.Client()
+client = bigquery.Client("gcp-hackathon2023-16")
 
 class Package:
     def __init__(self, weight, height, length, width):
@@ -20,26 +20,26 @@ for row in get_all_packages:
     packages.append(Package(row[0], row[1], row[2], row[3]))
     
 class Vehicle:
-    def __init__(self, id, number, max_weight, max_volume, length, height, width):
-        self.id = id
-        self.number = number
+    def __init__(self, name_id, quantity, max_weight, max_volume, length, height, width):
+        self.name_id = name_id
+        self.quantity = quantity
         self.max_weight = max_weight
         self.max_volume = max_volume
         self.length = length
         self.height = height
         self.width = width
         
-# vehicles = []
-# get_all_vehicles = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Vehicle` """)  # Make an API request.
-# for row in get_all_vehicles:
-#     vehicles.append(Vehicle(row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+vehicles = []
+get_all_vehicles = client.query(""" SELECT * FROM `gcp-hackathon2023-16.Medium_Example.Vehicle` """)  # Make an API request.
+for row in get_all_vehicles:
+    vehicles.append(Vehicle(row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
 
-vehicles = [
-    Vehicle('LORRY-L', 1, 5000, 24261874.16, 17 * 30.48, 7.2 * 30.48, 7 * 30.48),
-    Vehicle('LORRY-M', 2, 3000, 19980366.96, 14 * 30.48, 7.2 * 30.48, 7 * 30.48),
-    Vehicle('LORRY-S', 3, 1000, 7079211.65, 10 * 30.48, 5 * 30.48, 5 * 30.48),
-    Vehicle('VAN', 3, 500, 2378615.11, 8 * 30.48, 3 * 30.48, 3.5 * 30.48),
-    Vehicle('4x4', 6, 500, 1189307.56, 4 * 30.48, 3 * 30.48, 3.5 * 30.48)]
+# vehicles = [
+#     Vehicle('LORRY-L', 5000, 24261874.16, 17 * 30.48, 7.2 * 30.48, 7 * 30.48),
+#     Vehicle('LORRY-M', 3000, 19980366.96, 14 * 30.48, 7.2 * 30.48, 7 * 30.48),
+#     Vehicle('LORRY-S', 1000, 7079211.65, 10 * 30.48, 5 * 30.48, 5 * 30.48),
+#     Vehicle('VAN', 500, 2378615.11, 8 * 30.48, 3 * 30.48, 3.5 * 30.48),
+#     Vehicle('4x4', 500, 1189307.56, 4 * 30.48, 3 * 30.48, 3.5 * 30.48)]
     
 
 # Calculate the total weight and total volume of all packages
@@ -75,18 +75,18 @@ def create_data_model(packages, vehicles):
     max_heights = []
     truck_types = []
     
-    # reserve totalLorry data to be starting from small vehicle first
+    # starting from small vehicle first
     vehicles.reverse()
 
-    # resgister max_weight and max_volume for each available vehicle
-    for tL in vehicles:
-        for i in range(tL.number):
-            max_volumes.append(tL.max_volume)
-            max_weights.append(tL.max_weight)
-            max_lengths.append(tL.length)
-            max_widths.append(tL.width)
-            max_heights.append(tL.height)
-            truck_types.append(tL.id)
+    # register max_weight and max_volume for each available vehicle
+    for v in vehicles:
+        for i in range(v.quantity):
+            max_volumes.append(v.max_volume)
+            max_weights.append(v.max_weight)
+            max_lengths.append(v.length)
+            max_widths.append(v.width)
+            max_heights.append(v.height)
+            truck_types.append(v.name_id)
     
     data['max_volume'] = max_volumes 
     data['max_weight'] = max_weights 
